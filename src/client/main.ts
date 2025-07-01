@@ -528,5 +528,29 @@ class HtmlToGifApp {
 
 // 启动应用
 document.addEventListener('DOMContentLoaded', () => {
+    // 随机冷色系主题色生成
+    function randomCoolTheme() {
+        // 色相180~260（蓝、青、紫），饱和度20~40%，亮度85~95%
+        const h = Math.floor(Math.random() * 80) + 180;
+        const s = Math.floor(Math.random() * 20) + 20;
+        const l = Math.floor(Math.random() * 10) + 88;
+        // 主色
+        const bg = `hsl(${h},${s}%,${l}%)`;
+        const card = `hsl(${h},${s}%,${l+4}%)`;
+        const btn = `hsl(${h},${s+10}%,${l-15}%)`;
+        const btnHover = `hsl(${h},${s+10}%,${l-20}%)`;
+        const border = `hsl(${h},${s-5}%,${l-10}%)`;
+        const label = `hsl(${h},${s+5}%,${l-25}%)`;
+        document.documentElement.style.setProperty('--theme-bg', bg);
+        document.documentElement.style.setProperty('--theme-card', card);
+        document.documentElement.style.setProperty('--theme-btn', btn);
+        document.documentElement.style.setProperty('--theme-btn-hover', btnHover);
+        document.documentElement.style.setProperty('--theme-border', border);
+        document.documentElement.style.setProperty('--theme-label', label);
+        document.documentElement.style.setProperty('--theme-input-bg', card);
+        document.documentElement.style.setProperty('--theme-input-border', border);
+        document.documentElement.style.setProperty('--theme-progress', `linear-gradient(90deg, ${bg}, ${btn})`);
+    }
+    randomCoolTheme();
     new HtmlToGifApp();
 }); 
