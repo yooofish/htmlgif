@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML转GIF工具</title>
+    <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>🎬 HTML转GIF工具</h1>
+            <p>上传HTML文件或输入在线HTML地址，轻松制作GIF动画</p>
+        </header>
+
+        <main class="main">
+            <div class="container">
+                <!-- 左侧：输入区域 -->
+                <div class="input-section">
+                    <div class="section-header">
+                        <h2>📁 HTML输入</h2>
+                    </div>
+                    
+                    <!-- 输入方式选择 -->
+                    <div class="input-methods">
+                        <div class="method-tabs">
+                            <button class="tab-btn active" data-method="upload">📤 上传文件</button>
+                            <button class="tab-btn" data-method="url">🌐 在线地址</button>
+                        </div>
+                        
+                        <!-- 文件上传区域 -->
+                        <div id="uploadArea" class="input-area active">
+                            <div class="upload-zone" id="uploadZone">
+                                <div class="upload-icon">📁</div>
+                                <p>点击或拖拽HTML文件到此处</p>
+                                <p class="upload-hint">支持 .html 文件</p>
+                                <input type="file" id="fileInput" accept=".html,.htm" hidden>
+                            </div>
+                            <div id="fileInfo" class="file-info hidden">
+                                <div class="file-details">
+                                    <span class="file-name" id="fileName"></span>
+                                    <button class="remove-file" id="removeFile">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- URL输入区域 -->
+                        <div id="urlArea" class="input-area">
+                            <div class="url-input-group">
+                                <input type="url" id="urlInput" placeholder="请输入HTML页面的URL地址..." class="url-input">
+                                <button id="loadUrlBtn" class="btn btn-primary">加载</button>
+                            </div>
+                            <div id="urlInfo" class="url-info hidden">
+                                <div class="url-details">
+                                    <span class="url-text" id="urlText"></span>
+                                    <button class="remove-url" id="removeUrl">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：预览和控制区域 -->
+                <div class="preview-section">
+                    <div class="section-header">
+                        <h2>👁️ 预览</h2>
+                        <button id="previewBtn" class="btn btn-primary" disabled>预览</button>
+                    </div>
+                    <div class="preview-container">
+                        <div id="previewFrame" class="preview-frame">
+                            <div class="preview-placeholder">
+                                <p>请先选择HTML文件或输入URL</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GIF设置 -->
+                    <div class="settings-section">
+                        <h3>⚙️ GIF设置</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label for="width">宽度 (px)</label>
+                                <input type="number" id="width" value="800" min="100" max="1920">
+                            </div>
+                            <div class="setting-item">
+                                <label for="height">高度 (px)</label>
+                                <input type="number" id="height" value="600" min="100" max="1080">
+                            </div>
+                            <div class="setting-item">
+                                <label for="fps">帧率 (fps)</label>
+                                <input type="number" id="fps" value="10" min="1" max="30">
+                            </div>
+                            <div class="setting-item">
+                                <label for="duration">时长 (ms)</label>
+                                <input type="number" id="duration" value="3000" min="500" max="10000">
+                            </div>
+                            <div class="setting-item">
+                                <label for="quality">质量 (1-20)</label>
+                                <input type="number" id="quality" value="10" min="1" max="20">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 转换按钮 -->
+                    <div class="convert-section">
+                        <button id="convertBtn" class="btn btn-success btn-large" disabled>
+                            🎬 转换为GIF
+                        </button>
+                        <div id="progress" class="progress hidden">
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <p class="progress-text">正在转换中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>✨ 使用 TypeScript + Puppeteer 构建</p>
+        </footer>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+</body>
+</html> 
