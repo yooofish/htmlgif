@@ -99,9 +99,19 @@ class HtmlToGifApp {
     // 设置输入元素
     private widthInput!: HTMLInputElement;
     private heightInput!: HTMLInputElement;
+    private offsetXInput!: HTMLInputElement;
+    private offsetYInput!: HTMLInputElement;
+    private widthValue!: HTMLSpanElement;
+    private heightValue!: HTMLSpanElement;
+    private offsetXValue!: HTMLSpanElement;
+    private offsetYValue!: HTMLSpanElement;
     private fpsInput!: HTMLInputElement;
     private durationInput!: HTMLInputElement;
     private qualityInput!: HTMLInputElement;
+    private widthInputBox!: HTMLInputElement;
+    private heightInputBox!: HTMLInputElement;
+    private offsetXInputBox!: HTMLInputElement;
+    private offsetYInputBox!: HTMLInputElement;
 
     // 状态
     private currentFile: File | null = null;
@@ -142,9 +152,19 @@ class HtmlToGifApp {
         // 设置
         this.widthInput = document.getElementById('width') as HTMLInputElement;
         this.heightInput = document.getElementById('height') as HTMLInputElement;
+        this.offsetXInput = document.getElementById('offsetX') as HTMLInputElement;
+        this.offsetYInput = document.getElementById('offsetY') as HTMLInputElement;
+        this.widthValue = document.getElementById('widthValue') as HTMLSpanElement;
+        this.heightValue = document.getElementById('heightValue') as HTMLSpanElement;
+        this.offsetXValue = document.getElementById('offsetXValue') as HTMLSpanElement;
+        this.offsetYValue = document.getElementById('offsetYValue') as HTMLSpanElement;
         this.fpsInput = document.getElementById('fps') as HTMLInputElement;
         this.durationInput = document.getElementById('duration') as HTMLInputElement;
         this.qualityInput = document.getElementById('quality') as HTMLInputElement;
+        this.widthInputBox = document.getElementById('widthInputBox') as HTMLInputElement;
+        this.heightInputBox = document.getElementById('heightInputBox') as HTMLInputElement;
+        this.offsetXInputBox = document.getElementById('offsetXInputBox') as HTMLInputElement;
+        this.offsetYInputBox = document.getElementById('offsetYInputBox') as HTMLInputElement;
     }
 
     private bindEvents(): void {
@@ -173,8 +193,14 @@ class HtmlToGifApp {
         this.convertBtn.addEventListener('click', () => this.convert());
 
         // 宽高参数变化时自动刷新预览
-        this.widthInput.addEventListener('input', () => this.preview());
-        this.heightInput.addEventListener('input', () => this.preview());
+        this.widthInput.addEventListener('input', () => this.handleSizeChange('width'));
+        this.heightInput.addEventListener('input', () => this.handleSizeChange('height'));
+        this.offsetXInput.addEventListener('input', () => this.handleOffsetChange('offsetX'));
+        this.offsetYInput.addEventListener('input', () => this.handleOffsetChange('offsetY'));
+        this.widthInputBox.addEventListener('input', () => this.handleSizeChange('widthBox'));
+        this.heightInputBox.addEventListener('input', () => this.handleSizeChange('heightBox'));
+        this.offsetXInputBox.addEventListener('input', () => this.handleOffsetChange('offsetXBox'));
+        this.offsetYInputBox.addEventListener('input', () => this.handleOffsetChange('offsetYBox'));
     }
 
     private switchTab(method: string): void {
@@ -323,28 +349,86 @@ class HtmlToGifApp {
         this.convertBtn.disabled = !hasContent;
     }
 
+    private handleSizeChange(source?: string): void {
+        let width = parseInt(this.widthInput.value);
+        let height = parseInt(this.heightInput.value);
+        if (source === 'widthBox') {
+            width = parseInt(this.widthInputBox.value);
+            this.widthInput.value = width + '';
+        } else {
+            this.widthInputBox.value = width + '';
+        }
+        if (source === 'heightBox') {
+            height = parseInt(this.heightInputBox.value);
+            this.heightInput.value = height + '';
+        } else {
+            this.heightInputBox.value = height + '';
+        }
+        // 动态调整offsetX/offsetY滑块和输入框范围
+        this.offsetXInput.min = (-width).toString();
+        this.offsetXInput.max = width.toString();
+        this.offsetXInputBox.min = (-width).toString();
+        this.offsetXInputBox.max = width.toString();
+        this.offsetYInput.min = (-height).toString();
+        this.offsetYInput.max = height.toString();
+        this.offsetYInputBox.min = (-height).toString();
+        this.offsetYInputBox.max = height.toString();
+        // 如果当前值超出新范围，重置为0
+        if (parseInt(this.offsetXInput.value) < -width || parseInt(this.offsetXInput.value) > width) {
+            this.offsetXInput.value = '0';
+            this.offsetXInputBox.value = '0';
+        }
+        if (parseInt(this.offsetYInput.value) < -height || parseInt(this.offsetYInput.value) > height) {
+            this.offsetYInput.value = '0';
+            this.offsetYInputBox.value = '0';
+        }
+        this.preview();
+    }
+
+    private handleOffsetChange(source?: string): void {
+        let offsetX = parseInt(this.offsetXInput.value);
+        let offsetY = parseInt(this.offsetYInput.value);
+        if (source === 'offsetXBox') {
+            offsetX = parseInt(this.offsetXInputBox.value);
+            this.offsetXInput.value = offsetX + '';
+        } else {
+            this.offsetXInputBox.value = offsetX + '';
+        }
+        if (source === 'offsetYBox') {
+            offsetY = parseInt(this.offsetYInputBox.value);
+            this.offsetYInput.value = offsetY + '';
+        } else {
+            this.offsetYInputBox.value = offsetY + '';
+        }
+        this.preview();
+    }
+
     private preview(): void {
         if (!this.currentHtml) {
-            this.previewFrame.innerHTML = '<div class="preview-placeholder"><p>请先选择HTML文件或输入URL</p></div>';
+            this.showError('请先选择HTML文件或输入URL');
             return;
         }
         const width = parseInt(this.widthInput.value);
         const height = parseInt(this.heightInput.value);
+        const offsetX = parseInt(this.offsetXInput.value);
+        const offsetY = parseInt(this.offsetYInput.value);
         this.previewFrame.style.width = width + 'px';
         this.previewFrame.style.height = height + 'px';
         this.previewFrame.innerHTML = `
           <iframe id="previewIframe" style="width:100%;height:100%;border:none;overflow:hidden;"></iframe>
         `;
         const iframe = document.getElementById('previewIframe') as HTMLIFrameElement;
-        // 强制iframe内容body宽高100%，overflow:hidden，margin:0;padding:0;display:block;
+        // 注入body样式和transform
         let htmlWithStyle = this.currentHtml;
+        const transform = `transform: translate(${offsetX}px, ${offsetY}px);`;
+        const bodyStyle = `width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;${transform}`;
         if (/<body[^>]*>/i.test(htmlWithStyle)) {
             htmlWithStyle = htmlWithStyle.replace(
                 /<body([^>]*)>/i,
-                `<body$1 style=\"width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;\">`
+                `<body$1 style=\"${bodyStyle}\">`
             );
         } else {
-            htmlWithStyle = `<body style=\"width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;\">` + htmlWithStyle + `</body>`;
+            htmlWithStyle = `<body style=\"${bodyStyle}\">` + htmlWithStyle + `</body>`;
         }
         iframe.srcdoc = htmlWithStyle;
     }
@@ -363,7 +447,9 @@ class HtmlToGifApp {
                 height: parseInt(this.heightInput.value),
                 fps: parseInt(this.fpsInput.value),
                 duration: parseInt(this.durationInput.value),
-                quality: parseInt(this.qualityInput.value)
+                quality: parseInt(this.qualityInput.value),
+                offsetX: parseInt(this.offsetXInput.value),
+                offsetY: parseInt(this.offsetYInput.value)
             };
             const response = await fetch('/api/html-to-gif/convert', {
                 method: 'POST',

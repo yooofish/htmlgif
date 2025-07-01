@@ -88,18 +88,22 @@ export class HtmlToGifService {
     }
   }
 
-  async convertHtmlToGif(html: string, options: GifOptions): Promise<Buffer> {
+  async convertHtmlToGif(html: string, options: GifOptions & { offsetX?: number, offsetY?: number }): Promise<Buffer> {
     const page = await this.createPage();
     try {
       // 注入body样式，确保和前端一致
       let htmlWithStyle = html;
+      const offsetX = options.offsetX || 0;
+      const offsetY = options.offsetY || 0;
+      const transform = `transform: translate(${offsetX}px, ${offsetY}px);`;
+      const bodyStyle = `width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;${transform}`;
       if (/<body[^>]*>/i.test(htmlWithStyle)) {
         htmlWithStyle = htmlWithStyle.replace(
           /<body([^>]*)>/i,
-          `<body$1 style=\"width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;\">`
+          `<body$1 style=\"${bodyStyle}\">`
         );
       } else {
-        htmlWithStyle = `<body style=\"width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;\">` + htmlWithStyle + `</body>`;
+        htmlWithStyle = `<body style=\"${bodyStyle}\">` + htmlWithStyle + `</body>`;
       }
       await page.setViewport({ width: options.width, height: options.height });
       await page.setContent(htmlWithStyle, { waitUntil: 'networkidle0' });
